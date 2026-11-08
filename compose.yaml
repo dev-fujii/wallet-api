@@ -1,0 +1,34 @@
+# 手元の開発用の DB を起動する（docker compose up -d）。アプリのコンテナは公開の手順で足す
+# ${...} の値は、同じフォルダーの .env から読む（パスワードを含むので git には入れない）
+
+services:
+  db:
+    image: postgres:17
+
+    container_name: wallet-db
+
+    # Docker が起動したら自動で起動する（docker compose stop で止めたときは起動しない）
+    restart: unless-stopped
+
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    volumes:
+      # データはコンテナの外（ボリューム）に置く。コンテナを消しても残る
+      - wallet-db-data:/var/lib/postgresql/data
+
+    # コンテナの起動だけでは、DB が接続を受け付けられるか分からないため確かめる
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  # 初回の起動時に Compose が作り、次回以降も同じデータを使う
+  wallet-db-data:

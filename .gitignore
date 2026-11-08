@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# DB のパスワードを含むため、手元の設定は git に入れない
+.env
